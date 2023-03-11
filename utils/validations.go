@@ -19,7 +19,7 @@ func IsValidTag(tagName string) bool {
 	}
 
 	words := strings.Fields(tagName)
-	if len(words) > 16 {
+	if len(words) > 16 || len(words) == 0 {
 		return false
 	}
 
