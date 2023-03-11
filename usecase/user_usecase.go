@@ -2,6 +2,7 @@ package usecase
 
 import (
 	"errors"
+	"regexp"
 
 	"enigmacamp.com/fine_dms/model"
 	"enigmacamp.com/fine_dms/repo"
@@ -14,6 +15,7 @@ var (
 	ErrUsecaseEmptyFname     = errors.New("`first_name` cannot be empty")
 	ErrUsecaseExistsUsername = errors.New("`username` already exists")
 	ErrUsecaseExistsEmail    = errors.New("`email` already exists")
+	ErrUsecaseFormatEmail    = errors.New("`email` invalid format")
 )
 
 type user struct {
@@ -59,7 +61,6 @@ func (self *user) Add(user *model.User) error {
 	if err := self.validateDuplicate(user); err != nil {
 		return err
 	}
-
 	// TODO: hashing password
 
 	return self.userRepo.Create(user)
@@ -89,6 +90,10 @@ func (self *user) validateEmpty(user *model.User) error {
 		return ErrUsecaseEmptyEmail
 	}
 
+	if err := ValidateEmail(user.Email); err != nil {
+		return err
+	}
+
 	if len(user.Password) == 0 {
 		return ErrUsecaseEmptyPassword
 	}
@@ -115,6 +120,15 @@ func (self *user) validateDuplicate(user *model.User) error {
 	}
 	if err == nil {
 		return ErrUsecaseExistsEmail
+	}
+
+	return nil
+}
+
+func ValidateEmail(email string) error {
+
+	if match, _ := regexp.MatchString(`^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$`, email); !match {
+		return ErrUsecaseFormatEmail
 	}
 
 	return nil
